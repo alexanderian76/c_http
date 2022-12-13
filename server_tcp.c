@@ -80,7 +80,7 @@ int main(int argc , char *argv[])
     puts("Connection accepted");
     puts(inet_ntoa(client.sin_addr));
     printf("%d", strcmp(inet_ntoa(client.sin_addr), "10.0.1.70"));
-if( strcmp(inet_ntoa(client.sin_addr), "10.0.1.70") == 0) {
+if( strcmp(inet_ntoa(client.sin_addr), "10.0.1.7") == 0) {
     if( recv(new_socket, server_reply , 6000 , 0) < 0)
 	{
 		puts("recv failed");
