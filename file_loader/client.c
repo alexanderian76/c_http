@@ -11,7 +11,7 @@
 #include <netinet/in.h>
 
 #define PORT_NUMBER     5000
-#define SERVER_ADDRESS  "10.0.1.7"
+#define SERVER_ADDRESS  "192.168.1.75"
 #define FILENAME        "send.txt"
 
 int main(int argc, char **argv)

@@ -15,7 +15,7 @@
 //#include <sys/sendfile.h>
 
 #define PORT_NUMBER     5000
-#define SERVER_ADDRESS  "10.0.1.7"
+#define SERVER_ADDRESS  "192.168.1.75"
 #define FILE_TO_SEND    "test.txt"
 
 int main(int argc, char **argv)
@@ -130,12 +130,25 @@ while(1) {
         long long i = 0;
         while(i < fsize) {
                 int j = 0;
-                for(j = 0; j < BUFSIZ; j++) 
+                
+                
+                if(i - fsize > BUFSIZ) 
                 {
-                        server_reply[j] = string[i + j];
+                        for(j = 0; j < BUFSIZ; j++) 
+                        {
+                                server_reply[j] = string[i + j];
+                        }
+                        send(peer_socket, server_reply, BUFSIZ, 0);
+                }
+                else
+                {
+                        for(j = 0; j < (fsize - i); j++) 
+                        {
+                                server_reply[j] = string[i + j];
+                        }
+                        send(peer_socket, server_reply, fsize - i, 0);
                 }
                 i += j;
-                send(peer_socket, server_reply, BUFSIZ, 0);
         }
         close(f);
         //send(peer_socket, , BUFSIZ, 0);

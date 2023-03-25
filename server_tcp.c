@@ -43,13 +43,13 @@ int main(int argc , char *argv[])
     //inet_addr("10.0.1.70");
     //INADDR_ANY;
     server.sin_port = htons( 8888 );
-
+/*
     client.sin_family = AF_INET;
     client.sin_addr.s_addr = inet_addr("10.0.1.71");
     //inet_addr("10.0.1.70");
     //INADDR_ANY;
     client.sin_port = htons( 5000 );
-     
+     */
     //Bind
     if( bind(s ,(struct sockaddr *)&server , sizeof(server)) < 0)
     {
@@ -80,7 +80,7 @@ int main(int argc , char *argv[])
     puts("Connection accepted");
     puts(inet_ntoa(client.sin_addr));
     printf("%d", strcmp(inet_ntoa(client.sin_addr), "10.0.1.70"));
-if( strcmp(inet_ntoa(client.sin_addr), "10.0.1.7") == 0) {
+if( strcmp(inet_ntoa(client.sin_addr), "127.0.0.1") == 0) {
     if( recv(new_socket, server_reply , 6000 , 0) < 0)
 	{
 		puts("recv failed");
