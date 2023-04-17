@@ -42,14 +42,14 @@ int main(int argc , char *argv[])
     server.sin_addr.s_addr = INADDR_ANY;
     //inet_addr("10.0.1.70");
     //INADDR_ANY;
-    server.sin_port = htons( 8888 );
-/*
+    server.sin_port = htons( 1234 );
+
     client.sin_family = AF_INET;
-    client.sin_addr.s_addr = inet_addr("10.0.1.71");
+    client.sin_addr.s_addr = inet_addr("192.168.1.74");
     //inet_addr("10.0.1.70");
     //INADDR_ANY;
     client.sin_port = htons( 5000 );
-     */
+     
     //Bind
     if( bind(s ,(struct sockaddr *)&server , sizeof(server)) < 0)
     {
@@ -85,16 +85,27 @@ if( strcmp(inet_ntoa(client.sin_addr), "127.0.0.1") == 0) {
 	{
 		puts("recv failed");
 	}
-    
+
     printf("Received packet from %s:%d\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 	puts("Reply received\n");
 	puts(server_reply);
     //close(s);
     
     //Reply to client
-    message = "HTTP1.1/ Header Hello Client , I have received your connection. But I have to go now, bye \n";
-    send(new_socket , message , strlen(message) , 0);
-
+    message = "HTTP/1.0 200 OK\r\nConnection: close\r\nContent-Type: text/html\r\nContent-Length: 37\r\n\r\n<html><body>Hello World</body></html>";
+    //message = "HTTP1.1/ 200 OK; Header content-type: text/html Hello Client , I have received your connection. But I have to go now, bye \n";
+   // send(new_socket , message , strlen(message) , 0);
+    int numSent;
+    unsigned char *pdata = (unsigned char *) message;
+    int datalen = strlen(message);
+    while (datalen > 0) {
+      numSent = send(new_socket , pdata , datalen , 0);
+      printf("NUMSENT: %d", numSent);
+      if (numSent == -1) return -1;
+      pdata += numSent;
+      datalen -= numSent;
+    }
+    
     }
     else {
         printf("Packet from %s:%d\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
