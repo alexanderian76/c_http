@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 
     // Listen to incoming connections
     listen(s, 3);
-    std::vector<arg_struct> args;
+   // std::vector<arg_struct> args;
 
     while (1)
     {
@@ -168,9 +168,13 @@ int main(int argc, char *argv[])
 
         memcpy(&sock, &new_socket, (size_t)sizeof(new_socket));
         // memcpy(&cl, &client, (size_t)sizeof(client));
-        args.push_back(arg_struct(sock, cl));
-        arg_struct a = args.back();
-        args.pop_back();
+
+        //тут использовался массив объектов с сокетами и клиентами, как будто бы и без него работает, но это не точно
+
+       // args.push_back(arg_struct(sock, cl));
+        arg_struct a = arg_struct(sock, cl);
+        //args.back();
+      //  args.pop_back();
         std::thread thr(response, a.new_socket, a.client);
         thr.detach();
         /* if(args1.new_socket == NULL) {
