@@ -87,10 +87,19 @@ void response(int new_socket, struct sockaddr_in client)
     }
     else
     {
+        //без recv нельзя через сокет отправить назад будет
+        if (recv(new_socket, server_reply, 6000, 0) < 0)
+        {
+            puts("recv failed");
+        }
         printf("Packet from %s:%d\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
         puts("Cant recieve from this address\n");
         puts("Reply received (denied)\n");
         puts(server_reply);
+        std::string deniedString = "HTTP/1.0 200 OK\r\nConnection: close\r\nContent-Type: text/html\r\nContent-Length: 7\r\n\r\nDENIED!";
+        unsigned char *pdata = (unsigned char *)deniedString.c_str();
+        int datalen = strlen(deniedString.c_str());
+        send(new_socket, pdata, datalen, 0);
     }
     // new_socket = NULL;
 }
