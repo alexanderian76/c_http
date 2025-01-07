@@ -29,6 +29,15 @@ public:
     struct sockaddr_in client;
 };
 
+std::string getRoute(std::string reply)
+{
+    int pos = reply.find_first_of("GET");
+    std::cout << pos << std::endl;
+    std::cout << reply.substr(pos + 4).find_first_of(' ', pos + 4) << std::endl;
+    std::string route = reply.substr(pos + 4, reply.substr(pos + 4).find_first_of(' ', pos + 4));
+    return route;
+}
+
 void response(int new_socket, struct sockaddr_in client)
 {
     // arg_struct args = arguments;
@@ -57,16 +66,29 @@ void response(int new_socket, struct sockaddr_in client)
         printf("Received packet from %s:%d\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
         puts("Reply received\n");
         puts(server_reply);
-        // close(s);
-        usleep(3000000);
-        // Reply to client
-        message = "HTTP/1.0 200 OK\r\nConnection: close\r\nContent-Type: text/html\r\nContent-Length: ";
-        //"\r\n\r\n<html><body>Hello World</body></html>";
-        std::string rep = std::string(server_reply) + " " + inet_ntoa(client.sin_addr) + ":" + std::to_string(ntohs(client.sin_port));
-        std::cout << "REP" << std::endl;
-        std::cout << rep << std::endl;
-        std::cout << std::to_string(strlen(rep.c_str())) << std::endl;
-        std::string combined = std::string(message) + std::to_string(strlen(rep.c_str())) + "\r\n\r\n" + rep;
+        std::string route = getRoute(server_reply);
+        std::cout << getRoute(server_reply) << std::endl;
+        std::string combined;
+        if (route == "/home")
+        {
+            message = "HTTP/1.0 200 OK\r\nConnection: close\r\nContent-Type: text/html\r\nContent-Length: ";
+            std::string rep = std::string("Hello from home route ") + inet_ntoa(client.sin_addr) + ":" + std::to_string(ntohs(client.sin_port));
+            combined = std::string(message) + std::to_string(strlen(rep.c_str())) + "\r\n\r\n" + rep;
+        }
+        else
+        {
+
+            // close(s);
+            usleep(3000000);
+            // Reply to client
+            message = "HTTP/1.0 200 OK\r\nConnection: close\r\nContent-Type: text/html\r\nContent-Length: ";
+            //"\r\n\r\n<html><body>Hello World</body></html>";
+            std::string rep = std::string(server_reply) + " " + inet_ntoa(client.sin_addr) + ":" + std::to_string(ntohs(client.sin_port));
+            std::cout << "REP" << std::endl;
+            std::cout << rep << std::endl;
+            std::cout << std::to_string(strlen(rep.c_str())) << std::endl;
+            combined = std::string(message) + std::to_string(strlen(rep.c_str())) + "\r\n\r\n" + rep;
+        }
         // message = message + "<html><body>Hello World";
         // combined = combined + "</body></html>";
 
@@ -87,7 +109,7 @@ void response(int new_socket, struct sockaddr_in client)
     }
     else
     {
-        //без recv нельзя через сокет отправить назад будет
+        // без recv нельзя через сокет отправить назад будет
         if (recv(new_socket, server_reply, 6000, 0) < 0)
         {
             puts("recv failed");
@@ -153,7 +175,7 @@ int main(int argc, char *argv[])
 
     // Listen to incoming connections
     listen(s, 3);
-   // std::vector<arg_struct> args;
+    // std::vector<arg_struct> args;
 
     while (1)
     {
@@ -178,12 +200,12 @@ int main(int argc, char *argv[])
         memcpy(&sock, &new_socket, (size_t)sizeof(new_socket));
         // memcpy(&cl, &client, (size_t)sizeof(client));
 
-        //тут использовался массив объектов с сокетами и клиентами, как будто бы и без него работает, но это не точно
+        // тут использовался массив объектов с сокетами и клиентами, как будто бы и без него работает, но это не точно
 
-       // args.push_back(arg_struct(sock, cl));
+        // args.push_back(arg_struct(sock, cl));
         arg_struct a = arg_struct(sock, cl);
-        //args.back();
-      //  args.pop_back();
+        // args.back();
+        //  args.pop_back();
         std::thread thr(response, a.new_socket, a.client);
         thr.detach();
         /* if(args1.new_socket == NULL) {
