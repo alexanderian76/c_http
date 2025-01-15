@@ -34,7 +34,9 @@ std::string getRoute(std::string reply)
     int pos = reply.find_first_of("GET");
     std::cout << pos << std::endl;
     std::cout << reply.substr(pos + 4).find_first_of(' ', pos + 4) << std::endl;
-    std::string route = reply.substr(pos + 4, reply.substr(pos + 4).find_first_of(' ', pos + 4));
+    std::cout << reply << std::endl;
+    std::string route = reply.substr(pos + 4, reply.find_first_of(' ', pos + 4) - pos - 4);
+    
     return route;
 }
 
