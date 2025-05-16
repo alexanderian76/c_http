@@ -77,6 +77,13 @@ void response(int new_socket, struct sockaddr_in client)
             std::string rep = std::string("Hello from home route ") + inet_ntoa(client.sin_addr) + ":" + std::to_string(ntohs(client.sin_port));
             combined = std::string(message) + std::to_string(strlen(rep.c_str())) + "\r\n\r\n" + rep;
         }
+        else if(route == "/mac")
+        {
+            message = "HTTP/1.0 200 OK\r\nConnection: close\r\nContent-Type: text/html\r\nContent-Length: ";
+            std::string str = "<div style='width: 100%; height: 100%; text-align: center; vertical-align: center;'><button style='padding: 10px; color: green; background-color: gray;' onclick='fetch(`http://localhost:1234`).then(() => console.log(123))'>Hello</button></div>";
+            std::string rep = str + inet_ntoa(client.sin_addr) + ":" + std::to_string(ntohs(client.sin_port));
+            combined = std::string(message) + std::to_string(strlen(rep.c_str())) + "\r\n\r\n" + rep;
+        }
         else
         {
 
