@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector> // подключили библиотеку
 #include <thread>
+#include <signal.h>
 
 // #pragma comment(lib,"ws2_32.lib") //Winsock Library
 
@@ -29,14 +30,36 @@ public:
     struct sockaddr_in client;
 };
 
+ssize_t write_nosigpipe(int fd, void *buf, size_t len)
+{
+    sigset_t oldset, newset;
+    ssize_t result;
+    siginfo_t si;
+    struct timespec ts = {0};
+
+    sigemptyset(&newset);
+    sigaddset(&newset, SIGPIPE);
+    sigaddset(&newset, SIGABRT);
+    pthread_sigmask(SIG_BLOCK, &newset, &oldset);
+
+    result = send(fd, buf, len, 0);
+
+    while (sigtimedwait(&newset, &si, &ts) >= 0 || errno != EAGAIN)
+        ;
+    pthread_sigmask(SIG_SETMASK, &oldset, 0);
+
+    return result;
+}
 std::string getRoute(std::string reply)
 {
     int pos = reply.find_first_of("GET");
     std::cout << pos << std::endl;
+    if (pos < 0 || pos + 4 > reply.length())
+        return "";
     std::cout << reply.substr(pos + 4).find_first_of(' ', pos + 4) << std::endl;
     std::cout << reply << std::endl;
     std::string route = reply.substr(pos + 4, reply.find_first_of(' ', pos + 4) - pos - 4);
-    
+
     return route;
 }
 
@@ -77,7 +100,7 @@ void response(int new_socket, struct sockaddr_in client)
             std::string rep = std::string("Hello from home route ") + inet_ntoa(client.sin_addr) + ":" + std::to_string(ntohs(client.sin_port));
             combined = std::string(message) + std::to_string(strlen(rep.c_str())) + "\r\n\r\n" + rep;
         }
-        else if(route == "/mac")
+        else if (route == "/mac")
         {
             message = "HTTP/1.0 200 OK\r\nConnection: close\r\nContent-Type: text/html\r\nContent-Length: ";
             std::string str = "<div style='width: 100%; height: 100%; text-align: center; vertical-align: center;'><button style='padding: 10px; color: green; background-color: gray;' onclick='fetch(`http://localhost:1234`).then(() => console.log(123))'>Hello</button></div>";
@@ -88,7 +111,7 @@ void response(int new_socket, struct sockaddr_in client)
         {
 
             // close(s);
-            usleep(3000000);
+            // usleep(3000000);
             // Reply to client
             message = "HTTP/1.0 200 OK\r\nConnection: close\r\nContent-Type: text/html\r\nContent-Length: ";
             //"\r\n\r\n<html><body>Hello World</body></html>";
@@ -106,7 +129,21 @@ void response(int new_socket, struct sockaddr_in client)
         int numSent;
         unsigned char *pdata = (unsigned char *)combined.c_str();
         int datalen = strlen(combined.c_str());
-        send(new_socket, pdata, datalen, 0);
+
+        std::cout << new_socket << " pdata: " << pdata << "\n datalen: " << datalen << std::endl;
+        int error_code;
+        socklen_t error_code_size = sizeof(error_code);
+        int status = getsockopt(new_socket, SOL_SOCKET, SO_ERROR, &error_code, &error_code_size);
+        std::cout << "Status: " << status << std::endl;
+        std::cout << "Code: " << error_code << std::endl;
+        if (status == 0)
+        {
+            ssize_t r = write_nosigpipe(new_socket, pdata, datalen);
+
+            std::cout << "Отправлено: " << r << std::endl;
+        }
+        close(new_socket);
+
         /* while (datalen > 0) {
            numSent =
            printf("NUMSENT: %d", numSent);
